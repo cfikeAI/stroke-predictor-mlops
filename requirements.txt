@@ -1,0 +1,1 @@
+"requests\npandas\nscikit-learn\nlightgbm\ndvc[azure]\nfastapi\nprometheus_client\n" 
