@@ -15,11 +15,9 @@ pip-delete-this-directory.txt
 *.log
 *.sqlite
 *.db
-
-# ==============================
-# MLOps Tools
 # ==============================
 # MLflow tracking runs and models
+# ==============================
 mlruns/
 
 # DVC cache and remote files
