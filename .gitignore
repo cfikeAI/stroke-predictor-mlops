@@ -4,3 +4,23 @@ __pycache__/
 .env
 .DS_store
 .ipynb_checkpoints
+
+# MLflow experiment logs
+mlruns/
+
+# DVC cache and metadata
+.dvc/
+dvc_remote/
+
+# Raw and processed data
+data/
+artifacts/
+
+# Python environment
+venv/
+__pycache__/
+*.pyc
+
+# IDE settings
+.vscode/
+.idea/
