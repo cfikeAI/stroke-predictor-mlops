@@ -1,0 +1,4 @@
+[core]
+    remote = azureblob
+['remote "azureblob"']
+    url = C:\Users\Apollo\Documents\_GitHubProjects\telemetryguard_mlops\dvc_remote

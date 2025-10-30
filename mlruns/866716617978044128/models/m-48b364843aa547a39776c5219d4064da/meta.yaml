@@ -1,0 +1,10 @@
+artifact_location: file:C:/Users/Apollo/Documents/_GitHubProjects/telemetryguard_mlops/mlruns/866716617978044128/models/m-48b364843aa547a39776c5219d4064da/artifacts
+creation_timestamp: 1761786710200
+experiment_id: '866716617978044128'
+last_updated_timestamp: 1761786715769
+model_id: m-48b364843aa547a39776c5219d4064da
+model_type: null
+name: model
+source_run_id: 9b557d8fd3684eca8a1a572d8dd1358b
+status: 2
+status_message: null

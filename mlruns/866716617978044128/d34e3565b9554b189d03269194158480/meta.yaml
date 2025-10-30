@@ -1,0 +1,14 @@
+artifact_uri: file:C:/Users/Apollo/Documents/_GitHubProjects/telemetryguard_mlops/mlruns/866716617978044128/d34e3565b9554b189d03269194158480/artifacts
+end_time: 1761786527417
+entry_point_name: ''
+experiment_id: '866716617978044128'
+lifecycle_stage: active
+run_id: d34e3565b9554b189d03269194158480
+run_name: LightGBM_Stroke_Prediction
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761786527363
+status: 4
+tags: []
+user_id: Apollo

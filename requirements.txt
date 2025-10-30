@@ -1,1 +1,11 @@
-"requests\npandas\nscikit-learn\nlightgbm\ndvc[azure]\nfastapi\nprometheus_client\n" 
+requests
+pandas
+scikit-learn
+lightgbm
+dvc[azure]
+fastapi
+prometheus_client
+seaborn
+mlflow
+matplotlib
+numpy
