@@ -1,26 +1,97 @@
-venv/
+# ==============================
+# Python
+# ==============================
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
 .env
-.DS_store
-.ipynb_checkpoints
+.venv/
+venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.ipynb_checkpoints/
+*.log
+*.sqlite
+*.db
 
-# MLflow experiment logs
+# ==============================
+# MLOps Tools
+# ==============================
+# MLflow tracking runs and models
 mlruns/
 
-# DVC cache and metadata
-.dvc/
+# DVC cache and remote files
+.dvc/cache/
+.dvc/tmp/
 dvc_remote/
-
-# Raw and processed data
-data/
 artifacts/
+data/
+.cache/
 
-# Python environment
-venv/
-__pycache__/
-*.pyc
+# ==============================
+# Docker
+# ==============================
+# Avoid bloating repo with build context
+Dockerfile~
+.dockerignore
+docker-compose*.yaml
+*.tar
+*.gz
+*.whl
+build/
+dist/
+*.egg-info/
+*.egg
 
-# IDE settings
+# ==============================
+# Terraform / Cloud Infra
+# ==============================
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+terraform.tfvars.json
+crash.log
+
+# ==============================
+# Model Artifacts
+# ==============================
+*.onnx
+*.pt
+*.pkl
+*.joblib
+*.h5
+*.ckpt
+*.model
+*.bin
+*.sav
+
+# ==============================
+# Logs and Outputs
+# ==============================
+logs/
+*.log
+output/
+tmp/
+tmp_*/
+
+# ==============================
+# IDEs and OS
+# ==============================
 .vscode/
 .idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ==============================
+# Tests
+# ==============================
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
