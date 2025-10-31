@@ -24,13 +24,13 @@ class StrokeFeatures(BaseModel):
     bmi: Union[float, None] = Field(..., description="Body Mass Index, can be null") #float
     smoking_status: int = Field(..., description="Label-encoded smoking status") #0-3
 
-class PredictRequest(BaseModel):
+class PredictionRequest(BaseModel):
     inputs: Union[StrokeFeatures, List[StrokeFeatures]]
 
 class PredictionResult(BaseModel):
     prob: float = Field(..., description="Predicted probability of stroke (0-1)")
     label: int = Field(..., description="Predicted class 0/1")
 
-class PredictResponse(BaseModel):
+class PredictionResponse(BaseModel):
     results: List[PredictionResult] 
     model_version: str
