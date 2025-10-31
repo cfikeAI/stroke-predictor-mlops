@@ -7,10 +7,10 @@ EXPERIMENT_NAME = "Stroke_Prediction_LightGBM_TelemetryGuard"
 MLRUNS_PATH = "mlruns"
 #bridge between MLFlow tracked model and FastAPI inference service
 
-class ModelService:
+class ModelService: #service wrapper for MLFlow model
     def __init__(self):
         #resolve latest model from MLFlow
-        self.client = mlflow.tracking.MlflowClient(tracking_uri=MLRUNS_PATH)
+        self.client = mlflow.tracking.MlflowClient(tracking_uri=MLRUNS_PATH) #connects to local mlruns folder
         exp = self.client.get_experiment_by_name(EXPERIMENT_NAME)
         if exp is None:
             raise RuntimeError(f"Experiment '{EXPERIMENT_NAME}' not found in MLFlow at '{MLRUNS_PATH}'") #error if not found
@@ -30,8 +30,7 @@ class ModelService:
         self.model = mlflow.lightgbm.load_model(self.model_uri)
 
         #capture feature order from training data
-        #canonoical column order = the X_train.csv
-
+        #canonical column order = the X_train.csv
         xtrain_path = os.path.join("data", "processed", "X_train.csv")
         if not os.path.exists(xtrain_path):
             raise RuntimeError("Training data not found at 'data/processed/X_train.csv'. Ensure data preprocessing has been completed.")
