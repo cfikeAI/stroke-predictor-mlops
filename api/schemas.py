@@ -11,40 +11,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Literal, Union #import Union for possible missing values
 
-# Maps human-readable values to numeric encodings from training
-ENCODERS = {
-    "gender": {"Male": 0, "Female": 1, "Other": 2},
-    "ever_married": {"No": 0, "Yes": 1},
-    "work_type": {
-        "children": 0,
-        "Govt_job": 1,
-        "Never_worked": 2,
-        "Private": 3,
-        "Self-employed": 4
-    },
-    "Residence_type": {"Rural": 0, "Urban": 1},
-    "smoking_status": {
-        "never smoked": 0,
-        "formerly smoked": 1,
-        "smokes": 2,
-        "Unknown": 3
-    },
-}
 
-def encode_features(sample: dict) -> dict:
-    """Convert human-readable string features to numeric encodings."""
-    encoded = {}
-    for key, value in sample.items():
-        if key in ENCODERS:
-            mapping = ENCODERS[key]
-            # allow both string and numeric input
-            if isinstance(value, str):
-                encoded[key] = mapping.get(value, None)
-            else:
-                encoded[key] = value
-        else:
-            encoded[key] = value
-    return encoded
 
 
 class StrokeFeatures(BaseModel):

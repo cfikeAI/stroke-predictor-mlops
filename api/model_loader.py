@@ -2,53 +2,52 @@ import os
 import mlflow
 import pandas as pd
 from typing import Tuple
+from mlflow.tracking import MlflowClient
 
-EXPERIMENT_NAME = "Stroke_Prediction_LightGBM_TelemetryGuard"
+# === Configuration ===
+MODEL_NAME = "TelemetryGuard_Stroke_Model"  # Registered model name
+MODEL_ALIAS = "production"                  # Alias name (case-sensitive; lowercase)
 MLRUNS_PATH = "mlruns"
-#bridge between MLFlow tracked model and FastAPI inference service
+XTRAIN_PATH = os.path.join("data", "processed", "X_train.csv")
 
-class ModelService: #service wrapper for MLFlow model
+
+class ModelService:
+    """Service wrapper for loading and serving the latest model by alias from MLflow Registry."""
+
     def __init__(self):
-        #resolve latest model from MLFlow
-        self.client = mlflow.tracking.MlflowClient(tracking_uri=MLRUNS_PATH) #connects to local mlruns folder
-        exp = self.client.get_experiment_by_name(EXPERIMENT_NAME)
-        if exp is None:
-            raise RuntimeError(f"Experiment '{EXPERIMENT_NAME}' not found in MLFlow at '{MLRUNS_PATH}'") #error if not found
+        self.client = MlflowClient(tracking_uri=MLRUNS_PATH)
+
+        print(f"Loading model '{MODEL_NAME}' from MLflow Registry (alias: '{MODEL_ALIAS}')...")
+
+        # Load model by alias
         
-        runs = self.client.search_runs(
-            exp.experiment_id,
-            order_by=["attributes.start_time DESC"],
-            max_results=1
-        )
-        if len(runs) == 0:
-            raise RuntimeError(f"No runs found in experiment '{EXPERIMENT_NAME}. Train a model first'")
+        self.model = mlflow.lightgbm.load_model(f"models:/{MODEL_NAME}@{MODEL_ALIAS}")
 
-        self.run_id = runs[0].info.run_id       
-        self.model_uri = f"runs:/{self.run_id}/model" 
+        # Retrieve alias metadata (new API)
+        version_info = self.client.get_model_version_by_alias(MODEL_NAME, MODEL_ALIAS)
+        self.model_version = version_info.version
+        self.run_id = version_info.run_id
 
-        #load model (lighGBM booster) via mlflow
-        self.model = mlflow.lightgbm.load_model(self.model_uri)
+        print(f"Loaded model '{MODEL_NAME}' v{self.model_version} (alias='{MODEL_ALIAS}', run_id={self.run_id})")
 
-        #capture feature order from training data
-        #canonical column order = the X_train.csv
-        xtrain_path = os.path.join("data", "processed", "X_train.csv")
-        if not os.path.exists(xtrain_path):
-            raise RuntimeError("Training data not found at 'data/processed/X_train.csv'. Ensure data preprocessing has been completed.")
-        self.feature_order = pd.read_csv(xtrain_path, nrows=1).columns.tolist()
+        # Load training feature order
+        if not os.path.exists(XTRAIN_PATH):
+            raise RuntimeError(
+                f"Training data not found at '{XTRAIN_PATH}'. Ensure preprocessing completed."
+            )
+        self.feature_order = pd.read_csv(XTRAIN_PATH, nrows=1).columns.tolist()
 
     def predict_proba_and_label(self, rows: pd.DataFrame) -> Tuple[list, list]:
-        #ensure column order matches training
+        """Predict probabilities and binary labels."""
         rows = rows[self.feature_order]
-        #get probability scores from lightGBM model booster
         probs = self.model.predict(rows)
-        #binary label using 0.5 threshold
         labels = (probs >= 0.5).astype(int)
-
         return probs.tolist(), labels.tolist()
-    
-    def get_model_version(self) -> str:
-        #later this will be MLFlow model registry stage/version
-        return self.run_id
-#singleton-style instance for reuse in FastAPI
-model_service = ModelService()
 
+    def get_model_version(self) -> str:
+        """Expose version metadata for observability endpoints."""
+        return f"{MODEL_NAME}_v{self.model_version}@{MODEL_ALIAS}"
+
+
+# Singleton instance for FastAPI reuse
+model_service = ModelService()
