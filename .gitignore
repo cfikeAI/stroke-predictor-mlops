@@ -32,9 +32,7 @@ data/
 # Docker
 # ==============================
 # Avoid bloating repo with build context
-Dockerfile~
 .dockerignore
-docker-compose*.yaml
 *.tar
 *.gz
 *.whl
