@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 #PATHS
 PROC_PATH = "data/processed"
 BASELINE_PATH = "data/baselines"
+MODEL_NAME = "TelemetryGuard_Stroke_Model"
 
 # Load processed data
 X_train = pd.read_csv(f"{PROC_PATH}/X_train.csv")
@@ -99,8 +100,10 @@ def train_and_log():
             mlflow.log_artifact(BASELINE_PATH)
 
         #log model
-        mlflow.lightgbm.log_model(model, "model")
+        mlflow.lightgbm.log_model(model, artifact_path="model", registered_model_name=MODEL_NAME)
 
+
+        print(f"Model logged and registered under name: {MODEL_NAME}")
         print("Run successfully completed. AUC={auc:.3f}, F1={f1:.3f}")
 
 if __name__ == "__main__":
