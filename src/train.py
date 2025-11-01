@@ -46,65 +46,74 @@ def plot_feature_importance(model, feature_names, save_path):
     plt.close()
 
 def train_and_log():
+    # Handle imbalance
+    pos_weight = (len(y_train) - sum(y_train)) / sum(y_train)
+
     params = {
-        'objective': 'binary',
-        'metric': 'auc',
-        'boosting_type': 'gbdt',
-        'learning_rate': 0.05,
-        'num_leaves': 31,
-        'verbose': -1,
-        'feature_fraction': 0.8,
-        'bagging_fraction': 0.8,
-        'bagging_freq': 5,
-        'seed': 42
+        "objective": "binary",
+        "metric": "auc",
+        "boosting_type": "gbdt",
+        "learning_rate": 0.05,
+        "num_leaves": 31,
+        "verbose": -1,
+        "feature_fraction": 0.8,
+        "bagging_fraction": 0.8,
+        "bagging_freq": 5,
+        "scale_pos_weight": pos_weight,
+        "seed": 42
     }
 
-    with mlflow.start_run(run_name = "LightGBM_Stroke_Prediction"):
-        #train model
-        train_data = lgb.Dataset(X_train, label=y_train)
-        test_data = lgb.Dataset(X_test, label=y_test)
+    with mlflow.start_run(run_name="LightGBM_Stroke_Prediction"):
+        # Split validation
+        from sklearn.model_selection import train_test_split
+        X_tr, X_val, y_tr, y_val = train_test_split(
+            X_train, y_train, test_size=0.2, stratify=y_train, random_state=42
+        )
 
-        model = lgb.train(params, train_data, valid_sets=[test_data], num_boost_round=100)
+        train_data = lgb.Dataset(X_tr, label=y_tr)
+        val_data = lgb.Dataset(X_val, label=y_val)
 
-        # Predictions and evaluation
+        model = lgb.train(params, train_data, valid_sets=[val_data], num_boost_round=200)
+
+        # Predict
         y_pred_proba = model.predict(X_test, num_iteration=model.best_iteration)
-        y_pred = (y_pred_proba >= 0.5).astype(int)
 
+        # Optimal threshold
+        from sklearn.metrics import precision_recall_curve
+        prec, rec, thr = precision_recall_curve(y_val, model.predict(X_val))
+        f1_scores = 2 * (prec * rec) / (prec + rec)
+        best_thr = thr[np.nanargmax(f1_scores)]
+        y_pred = (y_pred_proba >= best_thr).astype(int)
+
+        # Metrics
         accuracy = accuracy_score(y_test, y_pred)
         roc_auc = roc_auc_score(y_test, y_pred_proba)
         recall = recall_score(y_test, y_pred)
         precision = precision_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred)
 
-        # Log parameters, metrics
+        # Log
         mlflow.log_params(params)
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("roc_auc", roc_auc)
         mlflow.log_metric("recall", recall)
         mlflow.log_metric("precision", precision)
         mlflow.log_metric("f1_score", f1)
+        mlflow.log_metric("best_threshold", best_thr)
 
-        # Log artifacts
+        # Confusion + feature importance
         os.makedirs("artifacts", exist_ok=True)
-        conf_path = "artifacts/confusion_matrix.png"
-        featimp_path = "artifacts/feature_importance.png"
+        plot_confusion(y_test, y_pred, "artifacts/confusion_matrix.png")
+        plot_feature_importance(model, X_train.columns, "artifacts/feature_importance.png")
+        mlflow.log_artifact("artifacts/confusion_matrix.png")
+        mlflow.log_artifact("artifacts/feature_importance.png")
 
-        plot_confusion(y_test, y_pred, conf_path)
-        plot_feature_importance(model, X_train.columns, featimp_path)
-
-        mlflow.log_artifact(conf_path)
-        mlflow.log_artifact(featimp_path)
-
-        # Log baselines (for drift reference)
-        if os.path.exists(BASELINE_PATH):
-            mlflow.log_artifact(BASELINE_PATH)
-
-        #log model
+        # Register model
         mlflow.lightgbm.log_model(model, artifact_path="model", registered_model_name=MODEL_NAME)
 
-
         print(f"Model logged and registered under name: {MODEL_NAME}")
-        print("Run successfully completed. AUC={auc:.3f}, F1={f1:.3f}")
+        print(f"Run successfully completed. AUC={roc_auc:.3f}, F1={f1:.3f}, thr={best_thr:.3f}")
+
 
 if __name__ == "__main__":
     train_and_log()
