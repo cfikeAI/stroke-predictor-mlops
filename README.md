@@ -37,3 +37,11 @@ From raw data to monitored, cloud-deployed inference:
                      │ (Prometheus + Grafana future) │
                      └──────────────────────────────┘
 
+Features:
+Data versioning with DVC tracking
+Model experiement tracking with MLFlow
+LightGBM model for tabular data
+FastAPI serving 
+IaC using Terraform - automated provisioning with Azure ML infrastructure
+Monitoring and observability
+Scalable deployment orchestrated with Azure Kubernetes Service (AKS)
