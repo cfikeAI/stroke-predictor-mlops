@@ -112,3 +112,45 @@ infra/terraform.tfstate.backup
 *.tfstate.backup
 *.tfvars
 *.tfvars.json
+
+
+
+# ============================
+# Grafana plugin binaries and cache
+# ============================
+grafana/plugins/
+grafana/data/
+grafana/logs/
+grafana/public/
+!grafana/provisioning/
+!grafana/dashboards/
+
+# Terraform state and cache
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/terraform.tfstate*
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+
+# DVC cache and temp
+.dvc/cache/
+.dvc/tmp/
+
+# MLflow local runs
+mlruns/
+
+# Python / virtualenv
+venv/
+__pycache__/
+*.pyc
+.env
+*.egg-info/
+
+# Docker build artifacts
+*.tar
+*.gz
+*.whl
+build/
+dist/
