@@ -1,0 +1,12 @@
+requests
+pandas
+scikit-learn
+lightgbm
+dvc[azure]
+fastapi
+prometheus_client
+seaborn
+mlflow
+matplotlib
+numpy
+pytest

@@ -1,9 +1,11 @@
 version: "3.9"
 services:
 
-  # FastAPI service for TelemetryGuard Stroke Prediction API
+    # FastAPI service for TelemetryGuard Stroke Prediction API
   api:
-    build: ./api
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile
     container_name: telemetryguard_api
     ports:
       - "8000:8000"
@@ -11,6 +13,9 @@ services:
       - .env
     depends_on:
       - mlflow
+    networks:
+      - telemetryguard_net
+
 
   # MLFlow tracking server
   mlflow:
@@ -19,10 +24,19 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./mlruns:/mlruns
+      - ./mlruns:/mlruns #persistence layer that copies mlruns from host machine into container
+      - ./mlflow.db:/mlflow.db #stores mlflow artifacts in local SQLite file (run names, metrics, params, etc.)
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root /mlruns
     restart: unless-stopped
     networks:
       - telemetryguard_net
+
+
 
   # Prometheus tracking service
   prometheus:
