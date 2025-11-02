@@ -18,7 +18,7 @@ resource "azurerm_resource_group" "rg" {
 #AKS and Prometheus/Grafana/insights feed (latency, uptime, drift metrics, etc)
 
 resource "azurerm_log_analytics_workspace" "law" {
-    name = "${var.project_name}-log"
+    name = "${var.project_name}-log${random_string.rand_suffix.result}"
     location = azurerm_resource_group.rg.location
     resource_group_name = azurerm_resource_group.rg.name
     sku = "PerGB2018"
@@ -124,7 +124,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
 #Grants AKS access to ACR to pull images - pods pull the container images
 resource "azurerm_role_assignment" "aks_to_acr_pull" {
-    principal_id = azurerm_kubernetes_cluster.aks.kubelet_identity.object_id
+    principal_id = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
     role_definition_name = "AcrPull"
     scope = azurerm_container_registry.acr.id
 }

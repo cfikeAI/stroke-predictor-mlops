@@ -44,7 +44,7 @@ output "aks_name" {
 }
 
 output "aks_kubelet_identity" {
-    value = azurerm_kubernetes_cluster.aks.kubelet_identity_object_id
+    value = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
     description = "The Object ID of the AKS cluster's kubelet identity"
 }
 
