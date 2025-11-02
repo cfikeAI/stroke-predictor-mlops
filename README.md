@@ -1,4 +1,4 @@
-"# TelemetryGuard - Self-Healing ML Service" 
+"#TelemetryGuard - Self-Healing ML Service#" 
 
 TelemetryGuard is a production-grade MLOps pipeline built for stroke prediction using tabular healthcare data.
 It demonstrates data versioning (DVC), experiment tracking (MLflow), model deployment (FastAPI + Docker + Azure AKS), and observability (Prometheus + Grafana) — a complete self-healing ML service lifecycle.
