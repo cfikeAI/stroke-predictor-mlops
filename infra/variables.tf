@@ -28,3 +28,9 @@ variable "log_analytics_retention_days" {
   type        = number
   default     = 30
 }
+
+variable "k8s_version" {
+  description = "Kubernetes version for AKS cluster"
+  type        = string
+  default     = "1.29.0"
+}
