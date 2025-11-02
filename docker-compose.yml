@@ -52,3 +52,8 @@ services:
     restart: unless-stopped
     networks:
       - telemetryguard_net
+
+#Shared Network Configuration
+networks:
+  telemetryguard_net:
+    driver: bridge #creates a virtual network so containers can communicateb by name (api -> mlflow -> prometheus)
