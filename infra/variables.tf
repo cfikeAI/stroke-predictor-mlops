@@ -8,7 +8,7 @@ variable "project_name" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "eastus"
+  default     = "eastus2"
 }
 
 variable "k8s_node_count" {
@@ -20,7 +20,7 @@ variable "k8s_node_count" {
 variable "k8s_vm_size" {
   description = "VM size for AKS agent nodes"
   type        = string
-  default     = "Standard_DS2_v2"
+  default     = "Standard_B2s"
 }
 
 variable "log_analytics_retention_days" {

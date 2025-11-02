@@ -29,7 +29,7 @@ resource "azurerm_log_analytics_workspace" "law" {
 #Where GitHub Actions pushes newly built images
 
 resource "azurerm_container_registry" "acr" {
-    name = "${var.project_name}-acr${random_string.rand_suffix.result}"
+    name = "${var.project_name}acr${random_string.rand_suffix.result}"
     resource_group_name = azurerm_resource_group.rg.name
     location = azurerm_resource_group.rg.location
     sku = "Basic"
@@ -49,13 +49,13 @@ resource "azurerm_storage_account" "sa" {
 
 resource "azurerm_storage_container" "mlflow" {
     name = "mlflow-artifacts"
-    storage_account_name = azurerm_storage_account.sa.name
+    storage_account_id = azurerm_storage_account.sa.id
     container_access_type = "private"
 }
 
 resource "azurerm_storage_container" "dvc" {
     name = "dvc-artifacts"
-    storage_account_name = azurerm_storage_account.sa.name
+    storage_account_id = azurerm_storage_account.sa.id
     container_access_type = "private"
 }
 
@@ -113,7 +113,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     #lock down public API later
     #enforces RBAC and disables local accounts (no unauthenticated kubectl access)
     role_based_access_control_enabled =  true
-    local_account_disabled = true
+    #local_account_disabled = true
 
     lifecycle {
       ignore_changes = [ default_node_pool.0.node_count ]
