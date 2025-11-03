@@ -10,3 +10,5 @@ mlflow
 matplotlib
 numpy
 pytest
+python-dotenv
+azure-storage-blob
