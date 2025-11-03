@@ -1,0 +1,54 @@
+#How many replicas of the deployment to run
+#Which images to pull
+#Container ports to expose
+#Prometheus annotations for scraping metrics
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "telemetryguard-api.fullname" . }}
+  labels:
+    app: telemetryguard-api
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    model_version: {{ .Values.env | toYaml | sha256sum | trunc 8 | quote }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: telemetryguard-api
+  template:
+    metadata:
+      labels:
+        app: telemetryguard-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: {{ .Values.prometheus.path | quote }}
+        prometheus.io/port: "{{ .Values.prometheus.port }}"
+    spec:
+      containers:
+        - name: telemetryguard-api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

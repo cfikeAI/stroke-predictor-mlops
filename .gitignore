@@ -53,6 +53,40 @@ terraform.tfvars
 terraform.tfvars.json
 crash.log
 
+# =====================================
+# Kubernetes & Helm
+# =====================================
+
+# Local kubeconfig (cluster credentials)
+.kube/
+*.kubeconfig
+*kubeconfig.yaml
+config
+
+# Helm cache, plugins, release artifacts
+.helm/
+.helm-cache/
+.helm-repository/
+.helm/plugins/
+.helm/plugins/*
+*.tgz
+*.helmrelease
+*.release.yaml
+*.lock
+
+# Rendered manifests / local test outputs
+infra/helm/**/manifests/
+infra/helm/**/rendered/
+infra/helm/**/tmp/
+infra/helm/**/output/
+infra/helm/**/templates/*.bak
+infra/helm/**/values.local.yaml
+infra/helm/**/values.dev.yaml
+
+# Kubernetes logs or dumps
+kubectl*.log
+k8s-dump*.yaml
+
 # ==============================
 # Model Artifacts
 # ==============================

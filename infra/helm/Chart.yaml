@@ -1,3 +1,7 @@
+# Name, Version, Type 
+
+
+
 apiVersion: v2
 name: telemetryguard-api
 description: A Helm chart for deploying the TelemetryGuard API

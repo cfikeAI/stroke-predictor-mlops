@@ -1,0 +1,18 @@
+#Exposes app internally/externally
+
+
+apiVersion: v1
+kind: Service
+metdata:
+  name: telemetryguard-api-service
+labels:
+  app: telemetryguard-api
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: telemetryguard-api
