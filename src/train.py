@@ -3,10 +3,35 @@ import os
 import json
 import mlflow
 import lightgbm as lgb
+from dotenv import load_dotenv
 import numpy as np
 from sklearn.metrics import accuracy_score, roc_auc_score, recall_score, precision_score, confusion_matrix, f1_score
 import seaborn as sns
 import matplotlib.pyplot as plt
+
+# Retrieve values securely
+load_dotenv()
+os.environ["AZURE_STORAGE_ACCOUNT"] = os.getenv("AZURE_STORAGE_ACCOUNT")
+os.environ["AZURE_STORAGE_KEY"] = os.getenv("AZURE_STORAGE_KEY")
+mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://telemetryguard-mlflow-service.default.svc.cluster.local:5000")
+mlflow_artifact_uri = os.getenv("MLFLOW_ARTIFACT_URI", "wasbs://mlflow-artifacts@telemetryguardmlflow.blob.core.windows.net")
+
+
+# Connect MLflow to remote tracking server and registry
+mlflow.set_tracking_uri(mlflow_tracking_uri)
+mlflow.set_registry_uri(mlflow_tracking_uri)
+
+#force artifact repo credentials
+
+os.environ["AZURE_STORAGE_CONNECTION_STRING"] = (
+    f"DefaultEndpointsProtocol=https;"
+    f"AccountName={os.getenv('AZURE_STORAGE_ACCOUNT')};"
+    f"AccountKey={os.getenv('AZURE_STORAGE_KEY')};"
+    f"EndpointSuffix=core.windows.net"
+)
+
+
+mlflow.set_experiment("Stroke_Prediction_LightGBM_TelemetryGuard")
 
 #PATHS
 PROC_PATH = "data/processed"
@@ -19,8 +44,9 @@ X_test = pd.read_csv(f"{PROC_PATH}/X_test.csv")
 y_train = pd.read_csv(f"{PROC_PATH}/y_train.csv").values.ravel()
 y_test = pd.read_csv(f"{PROC_PATH}/y_test.csv").values.ravel()
 
-#MLFlow
-mlflow.set_tracking_uri("mlruns")
+# MLflow remote tracking setup
+tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000")
+mlflow.set_tracking_uri(tracking_uri)
 mlflow.set_experiment("Stroke_Prediction_LightGBM_TelemetryGuard")
 
 def plot_confusion(y_true, y_pred, save_path):
@@ -105,8 +131,8 @@ def train_and_log():
         os.makedirs("artifacts", exist_ok=True)
         plot_confusion(y_test, y_pred, "artifacts/confusion_matrix.png")
         plot_feature_importance(model, X_train.columns, "artifacts/feature_importance.png")
-        mlflow.log_artifact("artifacts/confusion_matrix.png")
-        mlflow.log_artifact("artifacts/feature_importance.png")
+        mlflow.log_artifact("artifacts/confusion_matrix.png", artifact_path="plots")
+        mlflow.log_artifact("artifacts/feature_importance.png", artifact_path="plots")
 
         # Register model
         mlflow.lightgbm.log_model(model, artifact_path="model", registered_model_name=MODEL_NAME)

@@ -188,3 +188,9 @@ __pycache__/
 *.whl
 build/
 dist/
+
+
+#secrets
+*.env
+secret.yaml
+*.txt

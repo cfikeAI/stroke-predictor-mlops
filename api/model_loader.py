@@ -7,15 +7,22 @@ from mlflow.tracking import MlflowClient
 # === Configuration ===
 MODEL_NAME = "TelemetryGuard_Stroke_Model"  # Registered model name
 MODEL_ALIAS = "production"                  # Alias name (case-sensitive; lowercase)
-MLRUNS_PATH = "mlruns"
 XTRAIN_PATH = os.path.join("data", "processed", "X_train.csv")
+
+#MLFlow setup
+# === MLflow Setup ===
+mlflow_uri = os.getenv(
+    "MLFLOW_TRACKING_URI",
+    "http://telemetryguard-mlflow-service.default.svc.cluster.local:5000"
+)
+mlflow.set_tracking_uri(mlflow_uri)
 
 
 class ModelService:
     """Service wrapper for loading and serving the latest model by alias from MLflow Registry."""
 
     def __init__(self):
-        self.client = MlflowClient(tracking_uri=MLRUNS_PATH)
+        self.client = MlflowClient(tracking_uri=mlflow_uri)
 
         print(f"Loading model '{MODEL_NAME}' from MLflow Registry (alias: '{MODEL_ALIAS}')...")
 

@@ -1,18 +1,21 @@
 # Use lightweight Python base image
-FROM python:3.9-slim
+FROM python:3.10-slim
 
-# Set working directory inside container
-WORKDIR /app/api
+# Prevent pyc creation and buffer issues
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Copy root-level requirements
-COPY ../requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+WORKDIR /app
 
-# Copy all API source code
-COPY . /app/api
+# Copy and install dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the FastAPI port
+# Copy source code
+COPY src/ /app/src/
+
+# Expose FastAPI port
 EXPOSE 8000
 
 # Run the FastAPI server
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

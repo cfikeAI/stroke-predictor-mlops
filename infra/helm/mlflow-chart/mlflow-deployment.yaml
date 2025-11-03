@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetryguard-mlflow
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telemetryguard-mlflow
+  template:
+    metadata:
+      labels:
+        app: telemetryguard-mlflow
+    spec:
+      containers:
+        - name: telemetryguard-mlflow
+          image: telemetryguardacr2ac4.azurecr.io/mlflow:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          command: ["mlflow"]
+          args:
+            [
+              "server",
+              "--backend-store-uri", "sqlite:///mlflow.db",
+              "--default-artifact-root", "wasbs://mlflow-artifacts@telemetryguardmlflow.blob.core.windows.net",
+              "--host", "0.0.0.0",
+              "--port", "5000"
+            ]
+          env:
+            - name: AZURE_STORAGE_ACCOUNT
+              valueFrom:
+                secretKeyRef:
+                  name: telemetryguard-secrets
+                  key: azure-storage-account
+            - name: AZURE_STORAGE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: telemetryguard-secrets
+                  key: azure-storage-key
+          volumeMounts:
+            - name: mlflow-data
+              mountPath: /mlflow
+      volumes:
+        - name: mlflow-data
+          emptyDir: {}
