@@ -1,4 +1,7 @@
 import os
+os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "ACCOUNT_KEY"
+os.environ["AZURE_STORAGE_ACCOUNT"] = os.getenv("AZURE_STORAGE_ACCOUNT")
+os.environ["AZURE_STORAGE_KEY"] = os.getenv("AZURE_STORAGE_KEY")
 import mlflow
 import pandas as pd
 from typing import Tuple
@@ -28,10 +31,7 @@ class ModelService:
         print(f"Loading model '{MODEL_NAME}' from MLflow Registry (alias: '{MODEL_ALIAS}')...")
 
         # Load model by alias
-        import os
-        os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "ACCOUNT_KEY"
-        os.environ["AZURE_STORAGE_ACCOUNT"] = os.getenv("AZURE_STORAGE_ACCOUNT")
-        os.environ["AZURE_STORAGE_KEY"] = os.getenv("AZURE_STORAGE_KEY")
+        
         self.model = mlflow.lightgbm.load_model(f"models:/{MODEL_NAME}@{MODEL_ALIAS}")
 
         # Retrieve alias metadata (new API)
