@@ -1,7 +1,11 @@
 import os
 os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "ACCOUNT_KEY"
-os.environ["AZURE_STORAGE_ACCOUNT"] = os.getenv("AZURE_STORAGE_ACCOUNT")
-os.environ["AZURE_STORAGE_KEY"] = os.getenv("AZURE_STORAGE_KEY")
+os.environ["AZURE_STORAGE_ACCOUNT"] = os.environ.get("AZURE_STORAGE_ACCOUNT", "").strip()
+os.environ["AZURE_STORAGE_KEY"] = os.environ.get("AZURE_STORAGE_KEY", "").strip()
+
+print("Azure Storage auth configured:")
+print("Account:", os.environ["AZURE_STORAGE_ACCOUNT"])
+print("Key present:", bool(os.environ["AZURE_STORAGE_KEY"]))
 import mlflow
 import pandas as pd
 from typing import Tuple
