@@ -1,11 +1,32 @@
 import os
-os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "ACCOUNT_KEY"
-os.environ["AZURE_STORAGE_ACCOUNT"] = os.environ.get("AZURE_STORAGE_ACCOUNT", "").strip()
-os.environ["AZURE_STORAGE_KEY"] = os.environ.get("AZURE_STORAGE_KEY", "").strip()
 
-print("Azure Storage auth configured:")
-print("Account:", os.environ["AZURE_STORAGE_ACCOUNT"])
-print("Key present:", bool(os.environ["AZURE_STORAGE_KEY"]))
+
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient
+
+
+
+# Automatically picks up Managed Identity when in AKS
+credential = DefaultAzureCredential()
+
+account_url = "https://telemetryguardmlflow.blob.core.windows.net"
+blob_service_client = BlobServiceClient(account_url=account_url, credential=credential)
+
+try:
+    container_client = blob_service_client.get_container_client("mlflow-artifacts")
+    container_client.get_container_properties()
+    print("✅ Connected to Azure Blob Storage successfully via Managed Identity.")
+except Exception as e:
+    print("❌ Failed to connect to Blob Storage:", e)
+
+
+#os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "ACCOUNT_KEY"
+#os.environ["AZURE_STORAGE_ACCOUNT"] = os.environ.get("AZURE_STORAGE_ACCOUNT", "").strip()
+#os.environ["AZURE_STORAGE_KEY"] = os.environ.get("AZURE_STORAGE_KEY", "").strip()
+#
+#print("Azure Storage auth configured:")
+#print("Account:", os.environ["AZURE_STORAGE_ACCOUNT"])
+#print("Key present:", bool(os.environ["AZURE_STORAGE_KEY"]))
 import mlflow
 import pandas as pd
 from typing import Tuple
@@ -18,10 +39,13 @@ XTRAIN_PATH = os.path.join("data", "processed", "X_train.csv")
 
 #MLFlow setup
 # === MLflow Setup ===
+os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "MSI"
+
 mlflow_uri = os.getenv(
     "MLFLOW_TRACKING_URI",
     "http://telemetryguard-mlflow-service.default.svc.cluster.local:5000"
 )
+
 mlflow.set_tracking_uri(mlflow_uri)
 
 
