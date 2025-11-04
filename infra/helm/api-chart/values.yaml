@@ -1,0 +1,23 @@
+# Default values for telemetryguard-api Helm chart
+
+replicaCount: 1
+
+image:
+  repository: telemetryguardacr2ac4.azurecr.io/telemetryguard-api
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8000
+
+env:
+  - name: MLFLOW_TRACKING_URI
+    value: "http://telemetryguard-mlflow-service.default.svc.cluster.local:5000"
+  - name: MLFLOW_AZURE_STORAGE_AUTH_TYPE
+    value: "MSI"
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
