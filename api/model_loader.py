@@ -22,12 +22,16 @@ class ModelService:
     """Service wrapper for loading and serving the latest model by alias from MLflow Registry."""
 
     def __init__(self):
+        
         self.client = MlflowClient(tracking_uri=mlflow_uri)
 
         print(f"Loading model '{MODEL_NAME}' from MLflow Registry (alias: '{MODEL_ALIAS}')...")
 
         # Load model by alias
-        
+        import os
+        os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "ACCOUNT_KEY"
+        os.environ["AZURE_STORAGE_ACCOUNT"] = os.getenv("AZURE_STORAGE_ACCOUNT")
+        os.environ["AZURE_STORAGE_KEY"] = os.getenv("AZURE_STORAGE_KEY")
         self.model = mlflow.lightgbm.load_model(f"models:/{MODEL_NAME}@{MODEL_ALIAS}")
 
         # Retrieve alias metadata (new API)

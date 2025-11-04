@@ -1,0 +1,28 @@
+{
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "telemetryguard-api",
+            "image": "telemetryguardacr2ac4.azurecr.io/api:latest",
+            "livenessProbe": {
+              "httpGet": { "path": "/health", "port": 8000 },
+              "initialDelaySeconds": 60,
+              "periodSeconds": 10,
+              "timeoutSeconds": 5,
+              "failureThreshold": 6
+            },
+            "readinessProbe": {
+              "httpGet": { "path": "/health", "port": 8000 },
+              "initialDelaySeconds": 60,
+              "periodSeconds": 10,
+              "timeoutSeconds": 5,
+              "failureThreshold": 6
+            }
+          }
+        ]
+      }
+    }
+  }
+}
