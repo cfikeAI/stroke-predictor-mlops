@@ -5,7 +5,9 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
 # MLflow + Azure libs used by the server to push to Blob
 RUN pip install --no-cache-dir \
-    mlflow==2.10.0 \
+    mlflow[azureml]==2.17.0 \
+    lightgbm \
+    gunicorn \
     azure-identity \
     azure-storage-blob
 
