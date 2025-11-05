@@ -9,6 +9,5 @@ type: application
 version: 0.1.0
 appVersion: "0.1.0"
 
-metadata:
-  annotations:
-    azure.workload.identity/client-id: cbb07ae7-03b2-4a81-8df4-2382f65a3969
+annotations:
+    azure.workload.identity/client-id: "cbb07ae7-03b2-4a81-8df4-2382f65a3969"

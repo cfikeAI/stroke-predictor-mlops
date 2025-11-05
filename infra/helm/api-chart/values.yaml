@@ -20,12 +20,11 @@ podAnnotations:
 env:
   - name: MLFLOW_TRACKING_URI
     value: "http://telemetryguard-mlflow-service.default.svc.cluster.local:5000"
-  - name: MLFLOW_AZURE_STORAGE_AUTH_TYPE
-    value: "MSI"
-  - name: AZURE_STORAGE_ACCOUNT_NAME
-    value: "telemetryguardmlflow"
-  - name: AZURE_CLIENT_ID
-    value: "cbb07ae7-03b2-4a81-8df4-2382f65a3969"
+  - name: MODEL_NAME
+    value: "TelemetryGuard_Stroke_Model"
+  - name: MODEL_ALIAS
+    value: "production"
+
 
 livenessProbe:
   path: /health
@@ -40,6 +39,7 @@ readinessProbe:
   periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 6
+
 
 resources: {}
 nodeSelector: {}

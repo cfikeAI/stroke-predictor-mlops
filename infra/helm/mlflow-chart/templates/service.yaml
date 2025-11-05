@@ -1,17 +1,14 @@
-{{- /*
-Forces Helm to render static manifests even without templating.
-*/ -}}
----
 apiVersion: v1
 kind: Service
 metadata:
   name: telemetryguard-mlflow-service
-  namespace: default
+  labels:
+    app: telemetryguard-mlflow
 spec:
   type: ClusterIP
   selector:
     app: telemetryguard-mlflow
   ports:
-    - protocol: TCP
+    - name: http
       port: 5000
       targetPort: 5000

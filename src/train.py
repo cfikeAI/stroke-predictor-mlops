@@ -1,41 +1,36 @@
 import os
 import json
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import mlflow
 import lightgbm as lgb
-from sklearn.metrics import accuracy_score, roc_auc_score, recall_score, precision_score, f1_score
+from sklearn.metrics import accuracy_score, roc_auc_score, recall_score, precision_score, f1_score, confusion_matrix, precision_recall_curve
 
-# ---- MLflow wiring (single source of truth) ----
-MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://telemetryguard-mlflow-service:5000")
+# ---- MLflow wiring ----
+MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI")  # <- no localhost fallback, must be set from env
+if not MLFLOW_URI:
+    raise RuntimeError("MLFLOW_TRACKING_URI must be set (e.g., http://127.0.0.1:5050 for port-forward).")
 mlflow.set_tracking_uri(MLFLOW_URI)
 mlflow.set_registry_uri(MLFLOW_URI)
 
-# Use Managed Identity for artifacts (your MLflow server is started with --serve-artifacts)
-os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "MSI"
+# When server is started with --serve-artifacts + --artifacts-destination, no client creds needed
+os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "MSI"  # harmless if not used client-side
 
-EXPERIMENT_NAME = "Stroke_Prediction_LightGBM_TelemetryGuard"
+EXPERIMENT_NAME = "Stroke_Prediction_LightGBM_TelemetryGuard_v2"  
 MODEL_NAME = "TelemetryGuard_Stroke_Model"
 PROC_PATH = "data/processed"
 BASELINE_PATH = "data/baselines"
 
 mlflow.set_experiment(EXPERIMENT_NAME)
 
-#PATHS
-PROC_PATH = "data/processed"
-BASELINE_PATH = "data/baselines"
-MODEL_NAME = "TelemetryGuard_Stroke_Model"
-
 # Load processed data
 X_train = pd.read_csv(f"{PROC_PATH}/X_train.csv")
-X_test = pd.read_csv(f"{PROC_PATH}/X_test.csv")
+X_test  = pd.read_csv(f"{PROC_PATH}/X_test.csv")
 y_train = pd.read_csv(f"{PROC_PATH}/y_train.csv").values.ravel()
-y_test = pd.read_csv(f"{PROC_PATH}/y_test.csv").values.ravel()
+y_test  = pd.read_csv(f"{PROC_PATH}/y_test.csv").values.ravel()
 
-# MLflow remote tracking setup
-tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000")
-mlflow.set_tracking_uri(tracking_uri)
-mlflow.set_experiment("Stroke_Prediction_LightGBM_TelemetryGuard")
 
 def plot_confusion(y_true, y_pred, save_path):
     cm = confusion_matrix(y_true, y_pred)
@@ -92,35 +87,49 @@ def train_and_log():
         # Predict
         y_pred_proba = model.predict(X_test, num_iteration=model.best_iteration)
 
-        # Optimal threshold
+        # --- Choose optimal threshold on the VALIDATION set (not test) ---
         from sklearn.metrics import precision_recall_curve
-        prec, rec, thr = precision_recall_curve(y_val, model.predict(X_val))
-        f1_scores = 2 * (prec * rec) / (prec + rec)
-        best_thr = thr[np.nanargmax(f1_scores)]
-        y_pred = (y_pred_proba >= best_thr).astype(int)
-
-        # Metrics
-        accuracy = accuracy_score(y_test, y_pred)
-        roc_auc = roc_auc_score(y_test, y_pred_proba)
-        recall = recall_score(y_test, y_pred)
-        precision = precision_score(y_test, y_pred)
-        f1 = f1_score(y_test, y_pred)
-
-        # Log
+        
+        # Probabilities on val & test
+        y_proba_val  = model.predict(X_val,  num_iteration=getattr(model, "best_iteration", None))
+        y_proba_test = y_pred_proba  # already computed for X_test
+        
+        # precision_recall_curve returns: precision (len=N+1), recall (len=N+1), thresholds (len=N)
+        prec, rec, thr = precision_recall_curve(y_val, y_proba_val)
+        
+        # Compute F1 only where a threshold exists (align lengths with `thr`)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            f1_vals = 2.0 * (prec[:-1] * rec[:-1]) / (prec[:-1] + rec[:-1])
+            f1_vals = np.nan_to_num(f1_vals, nan=0.0, posinf=0.0, neginf=0.0)
+        
+        # Fallback if no thresholds (degenerate case)
+        best_thr = float(thr[np.argmax(f1_vals)]) if thr.size > 0 else 0.5
+        
+        # --- Convert test probabilities to binary labels using the chosen threshold ---
+        y_pred = (y_proba_test >= best_thr).astype(int)
+        
+        # --- Metrics (labels for cls metrics, probs for AUC) ---
+        accuracy  = accuracy_score(y_test, y_pred)
+        roc_auc   = roc_auc_score(y_test, y_proba_test)
+        recall    = recall_score(y_test, y_pred, zero_division=0)
+        precision = precision_score(y_test, y_pred, zero_division=0)
+        f1        = f1_score(y_test, y_pred, zero_division=0)
+        
+        # --- Log to MLflow ---
         mlflow.log_params(params)
-        mlflow.log_metric("accuracy", accuracy)
-        mlflow.log_metric("roc_auc", roc_auc)
-        mlflow.log_metric("recall", recall)
+        mlflow.log_metric("accuracy",  accuracy)
+        mlflow.log_metric("roc_auc",   roc_auc)
+        mlflow.log_metric("recall",    recall)
         mlflow.log_metric("precision", precision)
-        mlflow.log_metric("f1_score", f1)
+        mlflow.log_metric("f1_score",  f1)
         mlflow.log_metric("best_threshold", best_thr)
-
-        # Confusion + feature importance
+        
+        # --- Artifacts (use LABELS for confusion matrix) ---
         os.makedirs("artifacts", exist_ok=True)
         plot_confusion(y_test, y_pred, "artifacts/confusion_matrix.png")
         plot_feature_importance(model, X_train.columns, "artifacts/feature_importance.png")
-        mlflow.log_artifact("artifacts/confusion_matrix.png", artifact_path="plots")
-        mlflow.log_artifact("artifacts/feature_importance.png", artifact_path="plots")
+        #mlflow.log_artifact("artifacts/confusion_matrix.png",   artifact_path="plots")
+        #mlflow.log_artifact("artifacts/feature_importance.png", artifact_path="plots")
 
         # Register model
         mlflow.lightgbm.log_model(model, artifact_path="model", registered_model_name=MODEL_NAME)
