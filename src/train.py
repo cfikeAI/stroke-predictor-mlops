@@ -16,7 +16,7 @@ mlflow.set_tracking_uri(MLFLOW_URI)
 mlflow.set_registry_uri(MLFLOW_URI)
 
 # When server is started with --serve-artifacts + --artifacts-destination, no client creds needed
-os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "MSI"  # harmless if not used client-side
+#os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "MSI"  # harmless if not used client-side
 
 EXPERIMENT_NAME = "Stroke_Prediction_LightGBM_TelemetryGuard_v2"  
 MODEL_NAME = "TelemetryGuard_Stroke_Model"
