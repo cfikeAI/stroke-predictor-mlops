@@ -131,6 +131,14 @@ def train_and_log():
         #mlflow.log_artifact("artifacts/confusion_matrix.png",   artifact_path="plots")
         #mlflow.log_artifact("artifacts/feature_importance.png", artifact_path="plots")
 
+        # After training, before registering the model:
+        feature_order = X_train.columns.tolist()
+        os.makedirs("artifacts", exist_ok=True)
+        with open("artifacts/feature_order.json", "w") as f:
+            json.dump(feature_order, f)
+        mlflow.log_artifact("artifacts/feature_order.json", artifact_path="model_meta")
+
+
         # Register model
         mlflow.lightgbm.log_model(model, artifact_path="model", registered_model_name=MODEL_NAME)
 

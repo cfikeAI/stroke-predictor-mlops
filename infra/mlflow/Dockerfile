@@ -12,8 +12,5 @@ RUN pip install --no-cache-dir \
 EXPOSE 5000
 
 ENTRYPOINT ["mlflow"]
-CMD ["server","--host","0.0.0.0","--port","5000",
-     "--backend-store-uri","sqlite:///mlflow.db",
-     "--serve-artifacts",
-     "--artifacts-destination","wasbs://mlflow@telemetryguardmlflow.blob.core.windows.net",
-     "--allowed-hosts","*"]
+CMD ["server","--host","0.0.0.0","--port","5000","--backend-store-uri","sqlite:///mlflow.db","--serve-artifacts","--artifacts-destination","wasbs://mlflow@telemetryguardmlflow.blob.core.windows.net"]
+

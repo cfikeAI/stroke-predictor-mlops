@@ -1,2 +1,28 @@
-# intentionally empty
-{}
+replicaCount: 1
+
+image:
+  repository: telemetryguardacr2ac4.azurecr.io/mlflow
+  tag: v0.2.1
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 5000
+  targetPort: 5000
+
+podAnnotations:
+  azure.workload.identity/client-id: cbb07ae7-03b2-4a81-8df4-2382f65a3969
+
+env:
+  - name: MLFLOW_AZURE_STORAGE_AUTH_TYPE
+    value: "MSI"
+  - name: AZURE_CLIENT_ID
+    value: "cbb07ae7-03b2-4a81-8df4-2382f65a3969"
+  - name: AZURE_STORAGE_ACCOUNT_NAME
+    value: "telemetryguardmlflow"
+
+artifactStorage:
+  accountName: telemetryguardmlflow
+
+
+resources: {}

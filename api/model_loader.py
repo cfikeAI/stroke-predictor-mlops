@@ -5,6 +5,8 @@ import mlflow
 import pandas as pd
 from typing import Tuple
 from mlflow.tracking import MlflowClient
+import json
+import tempfile
 
 credential = DefaultAzureCredential()
 account_url = "https://telemetryguardmlflow.blob.core.windows.net"
@@ -45,12 +47,21 @@ class ModelService:
 
         print(f"Loaded model '{MODEL_NAME}' v{self.model_version} (alias='{MODEL_ALIAS}', run_id={self.run_id})")
 
-        # Load training feature order
-        if not os.path.exists(XTRAIN_PATH):
-            raise RuntimeError(
-                f"Training data not found at '{XTRAIN_PATH}'. Ensure preprocessing completed."
-            )
-        self.feature_order = pd.read_csv(XTRAIN_PATH, nrows=1).columns.tolist()
+        ## Load training feature order
+        #if not os.path.exists(XTRAIN_PATH):
+        #    raise RuntimeError(
+        #        f"Training data not found at '{XTRAIN_PATH}'. Ensure preprocessing completed."
+        #    )
+        #self.feature_order = pd.read_csv(XTRAIN_PATH, nrows=1).columns.tolist()
+
+        # Download feature_order.json from artifacts of this run
+        with tempfile.TemporaryDirectory() as tmp:
+            local_dir = self.client.download_artifacts(self.run_id, "model_meta", tmp)
+            feature_path = os.path.join(local_dir, "feature_order.json")
+            if not os.path.exists(feature_path):
+                raise RuntimeError("feature_order.json not found in artifacts. Re-train and log it.")
+            with open(feature_path, "r") as f:
+                self.feature_order = json.load(f)
 
     def predict_proba_and_label(self, rows: pd.DataFrame) -> Tuple[list, list]:
         """Predict probabilities and binary labels."""

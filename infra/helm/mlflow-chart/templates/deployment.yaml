@@ -5,7 +5,7 @@ metadata:
   labels:
     app: telemetryguard-mlflow
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: telemetryguard-mlflow
@@ -13,65 +13,45 @@ spec:
     metadata:
       labels:
         app: telemetryguard-mlflow
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
     spec:
+      serviceAccountName: telemetryguard-mlflow-sa
       containers:
         - name: telemetryguard-mlflow
-          image: telemetryguardacr2ac4.azurecr.io/mlflow:latest
-          command: ["mlflow"]
-          imagePullPolicy: IfNotPresent
+        # under containers[0]
           args:
-            - server
-            # --- Bind + port ---
-            - --host
-            - 0.0.0.0
-            - --port
-            - "5000"
+           - "server"
+           - "--host"
+           - "0.0.0.0"
+           - "--port"
+           - "{{ .Values.service.port }}"
+           - "--serve-artifacts"
+           - "--artifacts-destination"
+           - "wasbs://mlflow-artifacts@{{ .Values.artifactStorage.accountName }}.blob.core.windows.net"
 
-            # --- Backend store (SQLite file inside the container) ---
-            - --backend-store-uri
-            - sqlite:///mlflow.db
 
-            # --- Serve artifacts via the server (IMPORTANT) ---
-            - --serve-artifacts
-            - --artifacts-destination
-            - wasbs://mlflow@telemetryguardmlflow.blob.core.windows.net
-
-            # --- Accept calls from svc/port-forward / in-cluster hosts ---
-            - --allowed-hosts
-            - "*"
-
-          env:
-            # MLflow in the pod will use Managed Identity / Azure creds chain to reach Blob
-            - name: MLFLOW_AZURE_STORAGE_AUTH_TYPE
-              value: "MSI"
-            - name: AZURE_STORAGE_ACCOUNT_NAME
-              value: "telemetryguardmlflow"
-
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 5000
-              name: http
-
-          # TCP checks are reliable here (HTTP root returns 404)
-          readinessProbe:
-            tcpSocket:
-              port: 5000
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            timeoutSeconds: 1
-            failureThreshold: 3
+            - containerPort: {{ .Values.service.port }}
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
 
           livenessProbe:
             tcpSocket:
-              port: 5000
-            initialDelaySeconds: 15
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 20
             periodSeconds: 10
-            timeoutSeconds: 1
-            failureThreshold: 3
+            timeoutSeconds: 3
+            failureThreshold: 5
 
-          resources:
-            requests:
-              cpu: 250m
-              memory: 512Mi
-            limits:
-              cpu: "1"
-              memory: 2Gi
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+      restartPolicy: Always
