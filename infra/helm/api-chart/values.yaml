@@ -1,21 +1,45 @@
-# Default values for telemetryguard-api Helm chart
-
 replicaCount: 1
 
 image:
-  repository: telemetryguardacr2ac4.azurecr.io/telemetryguard-api
+  repository: telemetryguardacr2ac4.azurecr.io/api
   tag: latest
   pullPolicy: Always
 
 service:
   type: ClusterIP
   port: 8000
+  targetPort: 8000
+
+prometheus:
+  path: /metrics
+  port: 8000
+
+podAnnotations:
+  azure.workload.identity/client-id: cbb07ae7-03b2-4a81-8df4-2382f65a3969
 
 env:
   - name: MLFLOW_TRACKING_URI
     value: "http://telemetryguard-mlflow-service.default.svc.cluster.local:5000"
   - name: MLFLOW_AZURE_STORAGE_AUTH_TYPE
     value: "MSI"
+  - name: AZURE_STORAGE_ACCOUNT_NAME
+    value: "telemetryguardmlflow"
+  - name: AZURE_CLIENT_ID
+    value: "cbb07ae7-03b2-4a81-8df4-2382f65a3969"
+
+livenessProbe:
+  path: /health
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+readinessProbe:
+  path: /health
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 6
 
 resources: {}
 nodeSelector: {}

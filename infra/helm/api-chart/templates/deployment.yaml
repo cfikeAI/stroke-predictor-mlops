@@ -12,6 +12,8 @@ metadata:
     app: telemetryguard-api
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     model_version: {{ .Values.env | toYaml | sha256sum | trunc 8 | quote }}
+  annotations:
+    {{- toYaml .Values.podAnnotations | nindent 8 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:

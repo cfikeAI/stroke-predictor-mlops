@@ -1,0 +1,7 @@
+#Name, version, type
+apiVersion: v2
+name: telemetryguard-mlflow
+description: Helm chart for MLflow tracking server on AKS
+type: application
+version: 0.1.0
+appVersion: "1.0"

@@ -1,37 +1,25 @@
-import pandas as pd
 import os
 import json
+import pandas as pd
+import numpy as np
 import mlflow
 import lightgbm as lgb
-from dotenv import load_dotenv
-import numpy as np
-from sklearn.metrics import accuracy_score, roc_auc_score, recall_score, precision_score, confusion_matrix, f1_score
-import seaborn as sns
-import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, roc_auc_score, recall_score, precision_score, f1_score
 
-# Retrieve values securely
-load_dotenv()
-os.environ["AZURE_STORAGE_ACCOUNT"] = os.getenv("AZURE_STORAGE_ACCOUNT")
-os.environ["AZURE_STORAGE_KEY"] = os.getenv("AZURE_STORAGE_KEY")
-mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://telemetryguard-mlflow-service.default.svc.cluster.local:5000")
-mlflow_artifact_uri = os.getenv("MLFLOW_ARTIFACT_URI", "wasbs://mlflow-artifacts@telemetryguardmlflow.blob.core.windows.net")
+# ---- MLflow wiring (single source of truth) ----
+MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://telemetryguard-mlflow-service:5000")
+mlflow.set_tracking_uri(MLFLOW_URI)
+mlflow.set_registry_uri(MLFLOW_URI)
 
+# Use Managed Identity for artifacts (your MLflow server is started with --serve-artifacts)
+os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "MSI"
 
-# Connect MLflow to remote tracking server and registry
-mlflow.set_tracking_uri(mlflow_tracking_uri)
-mlflow.set_registry_uri(mlflow_tracking_uri)
+EXPERIMENT_NAME = "Stroke_Prediction_LightGBM_TelemetryGuard"
+MODEL_NAME = "TelemetryGuard_Stroke_Model"
+PROC_PATH = "data/processed"
+BASELINE_PATH = "data/baselines"
 
-#force artifact repo credentials
-
-os.environ["AZURE_STORAGE_CONNECTION_STRING"] = (
-    f"DefaultEndpointsProtocol=https;"
-    f"AccountName={os.getenv('AZURE_STORAGE_ACCOUNT')};"
-    f"AccountKey={os.getenv('AZURE_STORAGE_KEY')};"
-    f"EndpointSuffix=core.windows.net"
-)
-
-
-mlflow.set_experiment("Stroke_Prediction_LightGBM_TelemetryGuard")
+mlflow.set_experiment(EXPERIMENT_NAME)
 
 #PATHS
 PROC_PATH = "data/processed"

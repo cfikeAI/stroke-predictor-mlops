@@ -1,0 +1,78 @@
+{{- /*
+Forces Helm to render static manifests even without templating.
+*/ -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetryguard-mlflow
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telemetryguard-mlflow
+  template:
+    metadata:
+      labels:
+        app: telemetryguard-mlflow
+    spec:
+      containers:
+        - name: telemetryguard-mlflow
+          image: telemetryguardacr2ac4.azurecr.io/mlflow:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          command: ["mlflow"]
+          args:
+            - server
+            - --backend-store-uri
+            - sqlite:///mlflow.db
+            - --default-artifact-root
+            - wasbs://mlflow@telemetryguardmlflow.blob.core.windows.net
+            - --host
+            - 0.0.0.0
+            - --port
+            - "5000"
+            - --serve-artifacts
+            # IMPORTANT: Explicitly whitelist all Host headers your cluster will use.
+            - --allowed-hosts
+            - "*"
+            # Optional: if you have a separate UI calling MLflow from the browser, enable CORS.
+            # - --cors-allowed-origins
+            # - "*"
+
+          env:
+            # Use MSI for Azure Blob auth (you must have AKS Workload Identity / pod MI wired up)
+            - name: MLFLOW_AZURE_STORAGE_AUTH_TYPE
+              value: "MSI"
+            - name: AZURE_STORAGE_ACCOUNT_NAME
+              value: "telemetryguardmlflow"
+            # (Optional) Some environments prefer this form:
+            # - name: AZURE_STORAGE_ACCOUNT_URL
+            #   value: "https://telemetryguardmlflow.blob.core.windows.net"
+
+          # Simple health checks so the Service only routes when ready
+          readinessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+      # Ephemeral DB for demo/dev; swap to a PVC or external DB for prod
+      volumes:
+        - name: mlflow-data
+          emptyDir: {}
