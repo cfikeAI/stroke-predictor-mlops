@@ -8,23 +8,27 @@ from mlflow.tracking import MlflowClient
 import json
 import tempfile
 
-credential = DefaultAzureCredential()
-account_url = "https://telemetryguardmlflow.blob.core.windows.net"
-blob_service_client = BlobServiceClient(account_url=account_url, credential=credential)
-try:
-    container_client = blob_service_client.get_container_client("mlflow-artifacts")
-    container_client.get_container_properties()
-    print("✅ Connected to Azure Blob Storage successfully via Managed Identity.")
-except Exception as e:
-    print("❌ Failed to connect to Blob Storage:", e)
+#credential = DefaultAzureCredential()
+#account_url = "https://telemetryguardmlflow.blob.core.windows.net"
+#blob_service_client = BlobServiceClient(account_url=account_url, credential=credential)
+#try:
+#    container_client = blob_service_client.get_container_client("mlflow-artifacts")
+#    container_client.get_container_properties()
+#    print("Connected to Azure Blob Storage successfully via Managed Identity.")
+#except Exception as e:
+#    print("Failed to connect to Blob Storage:", e)
 
 
 MODEL_NAME = "TelemetryGuard_Stroke_Model"
 MODEL_ALIAS = "production"
 XTRAIN_PATH = os.path.join("data", "processed", "X_train.csv")
 
-mlflow_uri = os.getenv("MLFLOW_TRACKING_URI", "http://telemetryguard-mlflow-service.default.svc.cluster.local:5000")
+# ---- MLflow Local Mode ----
+mlflow_uri = os.getenv("MLFLOW_TRACKING_URI", "http://telemetryguard-mlflow-service.default.svc.cluster.local:5050")
 mlflow.set_tracking_uri(mlflow_uri)
+mlflow.set_registry_uri(mlflow_uri)
+
+print(f"Connected to MLflow tracking server at {mlflow_uri}")
 
 
 class ModelService:

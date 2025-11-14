@@ -8,15 +8,10 @@ import mlflow
 import lightgbm as lgb
 from sklearn.metrics import accuracy_score, roc_auc_score, recall_score, precision_score, f1_score, confusion_matrix, precision_recall_curve
 
-# ---- MLflow wiring ----
-MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI")  # <- no localhost fallback, must be set from env
-if not MLFLOW_URI:
-    raise RuntimeError("MLFLOW_TRACKING_URI must be set (e.g., http://127.0.0.1:5050 for port-forward).")
+# ---- MLflow wiring (LOCAL MODE) ----
+MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5050")
 mlflow.set_tracking_uri(MLFLOW_URI)
 mlflow.set_registry_uri(MLFLOW_URI)
-
-# When server is started with --serve-artifacts + --artifacts-destination, no client creds needed
-#os.environ["MLFLOW_AZURE_STORAGE_AUTH_TYPE"] = "MSI"  # harmless if not used client-side
 
 EXPERIMENT_NAME = "Stroke_Prediction_LightGBM_TelemetryGuard_v2"  
 MODEL_NAME = "TelemetryGuard_Stroke_Model"

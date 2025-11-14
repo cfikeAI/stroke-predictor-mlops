@@ -7,22 +7,23 @@ image:
 
 service:
   type: ClusterIP
-  port: 5000
-  targetPort: 5000
+  port: 5050
+  targetPort: 5050
 
 podAnnotations:
-  azure.workload.identity/client-id: cbb07ae7-03b2-4a81-8df4-2382f65a3969
+  azure.workload.identity/client-id: fb6697e5-0a91-4925-b0bd-4d9bea7e8b07
 
 env:
-  - name: MLFLOW_AZURE_STORAGE_AUTH_TYPE
-    value: "MSI"
-  - name: AZURE_CLIENT_ID
-    value: "cbb07ae7-03b2-4a81-8df4-2382f65a3969"
-  - name: AZURE_STORAGE_ACCOUNT_NAME
-    value: "telemetryguardmlflow"
+  - name: MLFLOW_ARTIFACT_ROOT
+    value: "file:/mlflow-artifacts"
+  - name: MLFLOW_BACKEND_STORE_URI
+    value: "sqlite:///mlflow.db"
+  - name: MLFLOW_TRACKING_URI
+    value: "http://0.0.0.0:5050"
+
 
 artifactStorage:
-  accountName: telemetryguardmlflow
+  accountName: telemetryguardstore17j8
 
 
 resources: {}
