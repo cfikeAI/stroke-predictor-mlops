@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: telemetryguardacr2ac4.azurecr.io/mlflow
+  repository: telemetryguardacr17j8.azurecr.io/mlflow
   tag: v0.2.1
   pullPolicy: Always
 
