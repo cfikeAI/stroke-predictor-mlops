@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 # Set workdir for the app
-WORKDIR /app/api
+WORKDIR /app
 
 # Copy root-level requirements.txt (build context = repo root)
 COPY api/requirements.txt /app/api/requirements.txt
@@ -29,4 +29,4 @@ COPY src/ /app/src/
 EXPOSE 8000
 
 # Run FastAPI app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
