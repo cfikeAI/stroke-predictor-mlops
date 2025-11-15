@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: telemetryguardacr17j8.azurecr.io/api
-  tag: v7
+  tag: v8
   pullPolicy: Always
 
 service:

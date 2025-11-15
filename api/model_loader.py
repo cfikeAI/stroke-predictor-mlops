@@ -8,7 +8,7 @@ from mlflow.tracking import MlflowClient
 import json
 import tempfile
 
-#credential = DefaultAzureCredential()
+#credential = DefaultAzureCredential() 
 #account_url = "https://telemetryguardmlflow.blob.core.windows.net"
 #blob_service_client = BlobServiceClient(account_url=account_url, credential=credential)
 #try:
@@ -50,13 +50,6 @@ class ModelService:
         self.run_id = version_info.run_id
 
         print(f"Loaded model '{MODEL_NAME}' v{self.model_version} (alias='{MODEL_ALIAS}', run_id={self.run_id})")
-
-        ## Load training feature order
-        #if not os.path.exists(XTRAIN_PATH):
-        #    raise RuntimeError(
-        #        f"Training data not found at '{XTRAIN_PATH}'. Ensure preprocessing completed."
-        #    )
-        #self.feature_order = pd.read_csv(XTRAIN_PATH, nrows=1).columns.tolist()
 
         # Download feature_order.json from artifacts of this run
         with tempfile.TemporaryDirectory() as tmp:

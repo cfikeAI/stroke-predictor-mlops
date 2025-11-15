@@ -15,17 +15,6 @@ from typing import List, Literal, Union #import Union for possible missing value
 
 
 class StrokeFeatures(BaseModel):
-    #Field names MUST match columns in data/processed/X_train.csv exactly
-    #gender: int = Field(..., description="Label-encoded gender")
-    #age: float = Field(..., description="Age of the patient") #float
-    #hypertension: int = Field(..., description="0 if no hypertension, 1 if hypertension")
-    #heart_disease: int = Field(..., description="0 if no heart disease, 1 if heart disease")
-    #ever_married: int = Field(..., description="Label-encoded marital status")
-    #work_type: int = Field(..., description="Label-encoded work type") #0-4
-    #Residence_type: int = Field(..., description="Label-encoded residence type") #0 (Rural) or 1 (Urban)
-    #avg_glucose_level: float = Field(..., description="Average glucose level") #float
-    #bmi: Union[float, None] = Field(..., description="Body Mass Index, can be null") #float
-    #smoking_status: int = Field(..., description="Label-encoded smoking status") #0-3
 
     gender: Literal["Male", "Female", "Other"] = Field(..., description="Patient gender")
     age: float = Field(..., gt=0, description="Age of the patient (years)")
