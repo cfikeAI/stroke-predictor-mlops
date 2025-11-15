@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST, Gauge
 from api.model_loader import model_service
-from api import PredictionRequest, PredictionResponse, PredictionResult
+from api.schemas import PredictionRequest, PredictionResponse, PredictionResult
 
 
 # Maps human-readable values to numeric encodings from training
