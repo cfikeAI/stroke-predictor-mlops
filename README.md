@@ -38,16 +38,9 @@ From raw data to monitored, cloud-deployed inference:
                      └──────────────────────────────┘
 
 Features:
-Data versioning with DVC tracking
-
-Model experiement tracking with MLFlow
-
-LightGBM model for tabular data
-
-FastAPI serving 
-
-IaC using Terraform - automated provisioning with Azure ML infrastructure
-
-Monitoring and observability
-
-Scalable deployment orchestrated with Azure Kubernetes Service (AKS)
+Data: Versioned w/ DVC (tabular healthcare)
+Training: LightGBM experiments in MLflow
+Serving: FastAPI w/ Pydantic validation + health probes
+IaC: Terraform for AKS, ACR, RBAC
+Deployment: Helm charts + HPA autoscaling
+Monitoring: Prometheus metrics + Grafana dashboards (WIP)
