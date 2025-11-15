@@ -19,13 +19,9 @@ podAnnotations:
 
 env:
   - name: MLFLOW_TRACKING_URI
-    value: "http://telemetryguard-mlflow-service.default.svc.cluster.local:5000"
-  - name: MLFLOW_AZURE_STORAGE_AUTH_TYPE
-    value: "MSI"
-  - name: AZURE_CLIENT_ID
-    value: "cbb07ae7-03b2-4a81-8df4-2382f65a3969"
-  - name: AZURE_STORAGE_ACCOUNT_NAME
-    value: "telemetryguardmlflow"
+    value: "http://telemetryguard-mlflow-service.default.svc.cluster.local:5050"
+  - name: MLFLOW_ARTIFACT_ROOT
+    value: "file:/mlflow-artifacts"
 
 livenessProbe:
   path: /health

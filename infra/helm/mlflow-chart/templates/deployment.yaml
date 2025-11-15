@@ -19,25 +19,29 @@ spec:
       serviceAccountName: telemetryguard-mlflow-sa
       containers:
         - name: telemetryguard-mlflow
-        # under containers[0]
-          args:
-           - "server"
-           - "--host"
-           - "0.0.0.0"
-           - "--port"
-           - "{{ .Values.service.port }}"
-           - "--serve-artifacts"
-           - "--artifacts-destination"
-           - "wasbs://mlflow-artifacts@{{ .Values.artifactStorage.accountName }}.blob.core.windows.net"
-
-
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - containerPort: {{ .Values.service.port }}
+          command: ["mlflow"]
+          args:
+            - "server"
+            - "--host"
+            - "0.0.0.0"
+            - "--port"
+            - "{{ .Values.service.port }}"
+            - "--backend-store-uri"
+            - "sqlite:///mlflow.db"
+            - "--serve-artifacts"
+            - "--artifacts-destination"
+            - "http://127.0.0.1:5050/"
+            - "--default-artifact-root"
+            - "file:/mlflow-artifacts"
           env:
             {{- toYaml .Values.env | nindent 12 }}
-
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          volumeMounts:
+            - name: mlflow-artifacts
+              mountPath: /mlflow-artifacts
           livenessProbe:
             tcpSocket:
               port: {{ .Values.service.port }}
@@ -45,7 +49,6 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 5
-
           readinessProbe:
             tcpSocket:
               port: {{ .Values.service.port }}
@@ -53,5 +56,7 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 5
             failureThreshold: 5
-
+      volumes:
+        - name: mlflow-artifacts
+          emptyDir: {}
       restartPolicy: Always
