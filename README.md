@@ -38,9 +38,15 @@ From raw data to monitored, cloud-deployed inference:
                      └──────────────────────────────┘
 
 Features:
+
 Data: Versioned w/ DVC (tabular healthcare)
+
 Training: LightGBM experiments in MLflow
+
 Serving: FastAPI w/ Pydantic validation + health probes
+
 IaC: Terraform for AKS, ACR, RBAC
+
 Deployment: Helm charts + HPA autoscaling
+
 Monitoring: Prometheus metrics + Grafana dashboards (WIP)
