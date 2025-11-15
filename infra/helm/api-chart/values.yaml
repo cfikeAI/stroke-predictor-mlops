@@ -20,8 +20,6 @@ podAnnotations:
 env:
   - name: MLFLOW_TRACKING_URI
     value: "http://telemetryguard-mlflow-service.default.svc.cluster.local:5050"
-  - name: MLFLOW_ARTIFACT_ROOT
-    value: "file:/mlflow-artifacts"
 
 livenessProbe:
   path: /health

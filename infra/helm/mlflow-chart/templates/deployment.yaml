@@ -30,10 +30,12 @@ spec:
             - "{{ .Values.service.port }}"
             - "--backend-store-uri"
             - "sqlite:///mlflow.db"
+            #- "--artifacts-destination"
+            #- "http://127.0.0.1:5050/"
+            #- "--default-artifact-root"
+            #- "file:/mlflow-artifacts"
             - "--serve-artifacts"
             - "--artifacts-destination"
-            - "http://127.0.0.1:5050/"
-            - "--default-artifact-root"
             - "file:/mlflow-artifacts"
           env:
             {{- toYaml .Values.env | nindent 12 }}
